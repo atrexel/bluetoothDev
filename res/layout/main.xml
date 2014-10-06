@@ -1,24 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="fill_parent"
-              android:layout_height="fill_parent"
-        >
-<TextView
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+          android:orientation="vertical"
+          android:layout_width="fill_parent"
+          android:layout_height="fill_parent"
+          >
+    <TextView
         android:id="@+id/bluetoothstate"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         />
-<Button
+    <Button
+        android:id="@+id/bluetoothOnButton"
+        android:layout_below="@+id/bluetoothstate"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="Bluetooth On"
+        android:layout_margin="5dp"
+        android:enabled="true"
+        />
+    <Button
+        android:id="@+id/bluetoothOffButton"
+        android:layout_below="@+id/bluetoothOnButton"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="Bluetooth Off"
+        android:layout_margin="5dp"
+        android:enabled="true"
+        />
+    <Button
+        android:id="@+id/bluetoothVisibleButton"
+        android:layout_below="@+id/bluetoothOffButton"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="Bluetooth Temporarily Visible"
+        android:layout_margin="5dp"
+        android:enabled="true"
+        />
+    <Button
         android:id="@+id/listpaireddevices"
+        android:layout_below="@+id/bluetoothVisibleButton"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="List Paired Devices"
+        android:layout_margin="5dp"
         android:enabled="false"
         />
-<TextView
-        android:id="@+id/bluetoothstate"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        />
-</LinearLayout>
+</RelativeLayout>
