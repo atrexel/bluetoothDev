@@ -1,0 +1,68 @@
+    private String getBTBufferInfo(BluetoothDevice device){
+        // Use a temporary object that is later assigned to mmSocket,
+        // because mmSocket is final
+        BluetoothSocket tmpSocket = null;
+        BufferedReader mBufferedReader = null;
+        InputStream aStream = null;
+        InputStreamReader aReader = null;
+
+        // Default UUID
+        UUID DEFAULT_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+
+        // Get a BluetoothSocket to connect with the given BluetoothDevice
+        try {
+            // Use the UUID of the device that discovered // TODO Maybe need extra device object
+            if (device != null)
+            {
+                Log.i(TAG, "Device UUID from fetch method: " + device.fetchUuidsWithSdp());
+                Log.i(TAG, "Device Name: " + device.getName());
+                Log.i(TAG, "Device UUID: " + device.getUuids()[0].getUuid());
+                tmpSocket = device.createRfcommSocketToServiceRecord(device.getUuids()[0].getUuid());
+
+                try {
+                    tmpSocket.connect();
+                    if(tmpSocket.isConnected()){
+                        aStream = tmpSocket.getInputStream();
+                        aReader = new InputStreamReader( aStream );
+                        mBufferedReader = new BufferedReader( aReader );
+
+                        tmpSocket.close();
+                        //while()
+                        return mBufferedReader.readLine();
+                    }
+                } catch (Exception e){
+                    Log.i(TAG, "Failed to make connection with Device UUID");
+                    return "Failed connection";
+                }
+            }
+            else Log.d(TAG, "Device is null.");
+        }
+        catch (NullPointerException e1)
+        {
+            Log.d(TAG, " UUID from device is null, Using Default UUID, Device name: " + device.getName());
+            try {
+                tmpSocket = device.createRfcommSocketToServiceRecord(DEFAULT_UUID);
+                try {
+                    tmpSocket.connect();
+                    if(tmpSocket.isConnected()){
+                        aStream = tmpSocket.getInputStream();
+                        aReader = new InputStreamReader( aStream );
+                        mBufferedReader = new BufferedReader( aReader );
+
+                        tmpSocket.close();
+                        //while()
+                        return mBufferedReader.readLine();
+                    }
+                } catch (Exception e2){
+                    Log.i(TAG, "Failed to make connection with Default UUID");
+                }
+            } catch (IOException e3) {
+                Log.e(TAG, "IOException thrown [" + e3 + "]");
+                e1.printStackTrace();
+                return "Failed connection";
+            }
+        }
+        catch (IOException e4) { return "Failed connection"; }
+
+        return "Failed connection";
+    }

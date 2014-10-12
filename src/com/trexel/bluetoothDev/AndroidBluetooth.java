@@ -3,12 +3,17 @@ import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 public class AndroidBluetooth extends Activity {
+
+    String selected_item_address;
 
     private static final int REQUEST_ENABLE_BT = 1;
     private static final int REQUEST_PAIRED_DEVICE = 2;
@@ -60,6 +65,7 @@ public class AndroidBluetooth extends Activity {
         }
     }
 
+
     private Button.OnClickListener btnListPairedDevicesOnClickListener
             = new Button.OnClickListener(){
         @Override
@@ -79,7 +85,28 @@ public class AndroidBluetooth extends Activity {
             CheckBlueToothState();
         }if (requestCode == REQUEST_PAIRED_DEVICE){
             if(resultCode == RESULT_OK){
+                if(data != null){
+                    String value = data.getStringExtra("KEY");
+                    Log.v("Returned", value);
+                    String selected_device = data.getStringExtra("ITEM_TEXT");
+                    Log.v("Returned", "List item text\n" + selected_device);
 
+                    //parses the returned string for the MAC address
+                    Pattern p = Pattern.compile("((([a-f]|[A-F]|[0-9]){2}:){5}([a-f]|[A-F]|[0-9]){2})");
+                    Matcher m = p.matcher(selected_device);
+                    if(m.find()) {
+                        int start = m.start();
+                        int end = m.end();
+                        String selected_address = selected_device.substring(start, end);
+                        Log.v("Found", "Match: " + selected_address);
+                        Toast.makeText(getApplicationContext(),"MAC Address\n"+selected_address,
+                                Toast.LENGTH_SHORT).show();
+                    }else{
+                        Log.v("Returned", "Error getting address...");
+                    }
+                }else{
+                    Log.v("Returned", "Error getting returned string...");
+                }
             }
         }
     }

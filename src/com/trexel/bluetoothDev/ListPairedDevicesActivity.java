@@ -32,7 +32,7 @@ public class ListPairedDevicesActivity extends ListActivity {
             for (BluetoothDevice device : pairedDevices) {
                 String deviceBTName = device.getName();
                 String deviceBTMAC = device.getAddress();
-                String deviceConnection = getBTConnectionStatus(device);
+                //String deviceConnection = getBTConnectionStatus(device);
                 String deviceBTState = getBTBondState(device.getBondState());
                 String deviceBTMajorClass = getBTMajorDeviceClass(device
                                                 .getBluetoothClass()
@@ -40,12 +40,11 @@ public class ListPairedDevicesActivity extends ListActivity {
                 btArrayAdapter.add(deviceBTName + "\n"
                         + "Address: " + deviceBTMAC + "\n"
                         + "State: " + deviceBTState + "\n"
-                        + "Connection: " + deviceConnection + "\n"
+                        //+ "Connection: " + deviceConnection + "\n"
                         + "Class: " + deviceBTMajorClass);
             }
         }
         setListAdapter(btArrayAdapter);
-
     }
 
     //checks if the device is paired with the phone
@@ -154,7 +153,12 @@ public class ListPairedDevicesActivity extends ListActivity {
         // TODO Auto-generated method stub
         super.onListItemClick(l, v, position, id);
 
+        String selectedFromList =(l.getItemAtPosition(position).toString());
+        Log.v("ListClick", "A list item was clicked\n" + selectedFromList);
+
         Intent intent = new Intent();
+        intent.putExtra("ITEM_TEXT",selectedFromList);
+        intent.putExtra("KEY","Hello, World");
         setResult(RESULT_OK, intent);
         finish();
     }
