@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Bluetooth Dev</string>
+    <string name="connectButtonText">Connect</string>
+    <string name="disconnectButtonText">Disconnect</string>
+    <string name="doneButtonText">Done</string>
 </resources>
