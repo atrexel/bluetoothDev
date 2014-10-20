@@ -74,7 +74,7 @@ public class AndroidBluetooth extends Activity {
             Intent intent = new Intent();
             intent.setClass(AndroidBluetooth.this, ListPairedDevicesActivity.class);
             Toast.makeText(getApplicationContext(),"Select a Device for Details\n"+
-                    "or to test a connection.",
+                    "   or to test a connection.",
                     Toast.LENGTH_SHORT).show();
             startActivityForResult(intent, REQUEST_PAIRED_DEVICE);
         }
@@ -88,7 +88,9 @@ public class AndroidBluetooth extends Activity {
             CheckBlueToothState();
         }if (requestCode == REQUEST_PAIRED_DEVICE){
             if(resultCode == RESULT_OK){
-
+                if(!bluetoothAdapter.isEnabled()) {
+                    CheckBlueToothState();
+                }
             }
         }
     }

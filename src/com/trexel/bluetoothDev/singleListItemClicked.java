@@ -28,21 +28,22 @@ public class singleListItemClicked extends Activity {
     Button disconnectButton;
     Button doneButton;
     TextView deviceNameTextView;
-    TextView deviceBondStateTextView;
     TextView deviceClassTextView;
     TextView deviceAddressTextView;
-    TextView deviceUUIDTextView;
+    TextView deviceBondStateTextView;
     TextView deviceConnectionTextView;
+    TextView deviceUUIDTextView;
 
     //bluetooth class variables
-    BluetoothAdapter bluetoothAdapter;
-    BluetoothDevice selectedDevice;
-    BluetoothSocket BTSocket;
+    BluetoothAdapter bluetoothAdapter = null;
+    BluetoothDevice selectedDevice = null;
+    BluetoothSocket BTSocket = null;
 
     //class variables
     String selectedDeviceText = "";
     String deviceAddress = "";
     String deviceUUIDs = "";
+    String connectionStatus = "";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -55,11 +56,11 @@ public class singleListItemClicked extends Activity {
         disconnectButton = (Button) findViewById(R.id.disconnectButton);
         doneButton = (Button) findViewById(R.id.doneButton);
         deviceNameTextView = (TextView) findViewById(R.id.deviceName);
-        deviceBondStateTextView = (TextView) findViewById(R.id.deviceBondState);
         deviceClassTextView = (TextView) findViewById(R.id.deviceClass);
         deviceAddressTextView = (TextView) findViewById(R.id.deviceAddress);
-        deviceUUIDTextView = (TextView) findViewById(R.id.deviceUUID);
+        deviceBondStateTextView = (TextView) findViewById(R.id.deviceBondState);
         deviceConnectionTextView = (TextView) findViewById(R.id.deviceConnection);
+        deviceUUIDTextView = (TextView) findViewById(R.id.deviceUUID);
 
         //instantiate the class bluetooth variables
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -93,19 +94,96 @@ public class singleListItemClicked extends Activity {
 
         if(selectedDevice != null){
             deviceNameTextView.setText(selectedDevice.getName());
-            deviceBondStateTextView.setText("Bond State: " +
-                    getBTBondState(selectedDevice.getBondState()));
             deviceClassTextView.setText("Class: " + getBTMajorDeviceClass(selectedDevice
                     .getBluetoothClass()
                     .getMajorDeviceClass()));
             deviceAddressTextView.setText("Address: " + selectedDevice.getAddress());
+            deviceBondStateTextView.setText("Bond State: " +
+                    getBTBondState(selectedDevice.getBondState()));
+            //get status of socket connection to device
+            if(BTSocket != null){
+                if(BTSocket.isConnected()){
+                    connectionStatus = "Connected";
+                }else{
+                    connectionStatus = "Disconnected";
+                }
+            }else{
+                connectionStatus = "Never Attempted";
+            }
+            deviceConnectionTextView.setText("Connection State: " + connectionStatus);
+            //get device uuids
             ParcelUuid uuids[] = selectedDevice.getUuids(); //selectedDevice.getUuids()[0].toString()
             for(ParcelUuid uuid : uuids){
                 deviceUUIDs = deviceUUIDs + "    " + uuid.getUuid().toString() + "\n";
             }
             deviceUUIDTextView.setText("UUIDs:\n" + deviceUUIDs);
-            deviceConnectionTextView.setText("Connection State: ");
         }
+
+        connectButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(!bluetoothAdapter.isEnabled()){
+                    finish();
+                }
+                if(BTSocket != null) {
+                    if(BTSocket.isConnected()){
+                        Toast.makeText(getApplicationContext(),"Already Connected.",
+                                Toast.LENGTH_SHORT).show();
+                    }else{
+                        //attempt to re-connect current socket
+                        //connect synchronously
+                        Toast.makeText(getApplicationContext(),"This make take some time.",
+                                Toast.LENGTH_SHORT).show();
+                        if(connectDevice(selectedDevice)){
+                            connectionStatus = "Connected";
+                            deviceConnectionTextView.setText("Connection State: " + connectionStatus);
+                        }else{
+                            connectionStatus = "Failed Connection";
+                            deviceConnectionTextView.setText("Connection State: " + connectionStatus);
+                        }
+                    }
+                }else{
+                    //a connection has never been attempted
+                    //connect synchronously
+                    Toast.makeText(getApplicationContext(),"This make take some time.",
+                            Toast.LENGTH_SHORT).show();
+                    if(connectDevice(selectedDevice)){
+                        connectionStatus = "Connected";
+                        deviceConnectionTextView.setText("Connection State: " + connectionStatus);
+                    }else{
+                        connectionStatus = "Failed Connection";
+                        deviceConnectionTextView.setText("Connection State: " + connectionStatus);
+                    }
+                }
+            }
+        });
+
+        disconnectButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(!bluetoothAdapter.isEnabled()){
+                    finish();
+                }
+                if(BTSocket != null) {
+                    if(!BTSocket.isConnected()){
+                        Toast.makeText(getApplicationContext(),"Not Connected.",
+                                Toast.LENGTH_SHORT).show();
+                    }else{
+                        try {
+                            BTSocket.close();
+                            connectionStatus = "Disconnected";
+                            deviceConnectionTextView.setText("Connection State: " + connectionStatus);
+                        }catch (Exception e){
+                            Log.d(TAG, "ERROR: " + e);
+                        }
+                    }
+                }else{
+                    //tell user a connection has never been attempted
+                    Toast.makeText(getApplicationContext(),"Please try to Connect first.",
+                            Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
 
         doneButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -182,7 +260,7 @@ public class singleListItemClicked extends Activity {
 
     //synchronouly / blocks main thread as this function attempts
     //to establish a connection via creating a bluetooth socket
-    private String getBTConnectionStatus(BluetoothDevice device){
+    private boolean connectDevice(BluetoothDevice device){
         // Use a temporary object that is later assigned to mmSocket,
         // because mmSocket is final
         BluetoothSocket tmpSocket = null;
@@ -203,12 +281,13 @@ public class singleListItemClicked extends Activity {
                 try {
                     tmpSocket.connect();
                     if(tmpSocket.isConnected()){
-                        tmpSocket.close();
-                        return "Could Connect";
+                        return true;
+                    }else{
+                        return false;
                     }
                 } catch (Exception e){
                     Log.i(TAG, "Failed to make connection with Device UUID");
-                    return "Failed connection";
+                    return false;
                 }
             }
             else Log.d(TAG, "Device is null.");
@@ -221,8 +300,9 @@ public class singleListItemClicked extends Activity {
                 try {
                     tmpSocket.connect();
                     if(tmpSocket.isConnected()){
-                        tmpSocket.close();
-                        return "Could Connect with Default";
+                        return true;
+                    }else{
+                        return false;
                     }
                 } catch (Exception e2){
                     Log.i(TAG, "Failed to make connection with Default UUID");
@@ -230,12 +310,12 @@ public class singleListItemClicked extends Activity {
             } catch (IOException e3) {
                 Log.e(TAG, "IOException thrown [" + e3 + "]");
                 //e1.printStackTrace();
-                return "Failed connection";
+                return false;
             }
         }
-        catch (IOException e4) { return "Failed connection"; }
+        catch (IOException e4) { return false; }
 
-        return "Failed connection";
+        return false;
     }
 
 }

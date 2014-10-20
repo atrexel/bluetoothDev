@@ -17,6 +17,8 @@ public class ListPairedDevicesActivity extends ListActivity {
     String TAG = "BTLog";
     private static final int SHOW_ITEM_DETAILS = 17;
 
+    BluetoothAdapter bluetoothAdapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         // TODO Auto-generated method stub
@@ -25,7 +27,7 @@ public class ListPairedDevicesActivity extends ListActivity {
 
         ArrayAdapter<String> btArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1);
 
-        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
 
         if (pairedDevices.size() > 0) {
@@ -122,7 +124,9 @@ public class ListPairedDevicesActivity extends ListActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         // TODO Auto-generated method stub
         if(requestCode == SHOW_ITEM_DETAILS){
-            //finish();  //use to go all the way back to AndroidBluetooth Activity
+            if(!bluetoothAdapter.isEnabled()) {
+                finish();  //use to go all the way back to AndroidBluetooth Activity
+            }
         }
     }
 }
