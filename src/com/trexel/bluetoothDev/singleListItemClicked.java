@@ -10,6 +10,7 @@ import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.ParcelUuid;
 import android.util.Log;
@@ -131,6 +132,10 @@ public class singleListItemClicked extends Activity {
                                 Toast.LENGTH_SHORT).show();
                     }else{
                         //attempt to re-connect current socket
+                        //try asynchronously
+                        new EstablishConnectionTask().execute(selectedDevice);
+
+                        /*
                         //connect synchronously
                         Toast.makeText(getApplicationContext(),"This make take some time.",
                                 Toast.LENGTH_SHORT).show();
@@ -140,10 +145,14 @@ public class singleListItemClicked extends Activity {
                         }else{
                             connectionStatus = "Failed Connection";
                             deviceConnectionTextView.setText("Connection State: " + connectionStatus);
-                        }
+                        }*/
                     }
                 }else{
                     //a connection has never been attempted
+                    //try asynchronously
+                    new EstablishConnectionTask().execute(selectedDevice);
+
+                    /*
                     //connect synchronously
                     Toast.makeText(getApplicationContext(),"This make take some time.",
                             Toast.LENGTH_SHORT).show();
@@ -154,6 +163,7 @@ public class singleListItemClicked extends Activity {
                         connectionStatus = "Failed Connection";
                         deviceConnectionTextView.setText("Connection State: " + connectionStatus);
                     }
+                    */
                 }
             }
         });
@@ -316,6 +326,65 @@ public class singleListItemClicked extends Activity {
         catch (IOException e4) { return false; }
 
         return false;
+    }
+                                           // AsyncTask<PARAMS, PROGRESS, RESULT>
+    private class EstablishConnectionTask extends AsyncTask<BluetoothDevice, Integer, Boolean> {
+        protected Boolean doInBackground(BluetoothDevice... devices) {
+            int count = devices.length;
+            for (int i = 0; i < count; i++) {
+                BluetoothDevice device = devices[i];
+
+                // Default UUID
+                UUID DEFAULT_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+
+                // Get a BluetoothSocket to connect with the given BluetoothDevice
+                try {
+                    BluetoothSocket tmpSocket = device.createRfcommSocketToServiceRecord(DEFAULT_UUID);
+
+                    try {
+                        tmpSocket.connect();
+                        if (tmpSocket.isConnected()) {
+                            BTSocket = tmpSocket;
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    } catch (IOException connectionError) {
+                        Log.d(TAG, "ERROR: " + connectionError);
+                    }
+                }catch (IOException socketError){
+                    Log.d(TAG, "ERROR: " + socketError);
+                }
+
+                //updates the progress for the onProgressUpdate method
+                //publishProgress((int) ((i / (float) count) * 100));
+
+                // Escape early if cancel() is called
+                if (isCancelled()) break;
+            }
+            //default is to return false
+            return false;
+        }
+
+        protected void onProgressUpdate(Integer... progress) {
+            //setProgressPercent(progress[0]);
+        }
+
+        protected void onPostExecute(Boolean result) {
+            /*Toast.makeText(getApplicationContext(),"Connection established " + result,
+                    Toast.LENGTH_SHORT).show();*/
+            if(BTSocket != null) {
+                if (BTSocket.isConnected()) {
+                    connectionStatus = "Connected";
+                } else {
+                    connectionStatus = "Failed Connection";
+                }
+                deviceConnectionTextView.setText("Connection State: " + connectionStatus);
+            }else{
+                connectionStatus = "Failed Connection";
+                deviceConnectionTextView.setText("Connection State: " + connectionStatus);
+            }
+        }
     }
 
 }
