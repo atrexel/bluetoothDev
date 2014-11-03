@@ -1,1 +1,10 @@
-out/*
+# Intellij
+.idea/
+*.iml
+*.iws
+
+# Mac
+.DS_Store
+
+# Other
+out/
